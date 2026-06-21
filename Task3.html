@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple Product Page</title>
+<style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: honeydew;
+            padding: 40px;
+        }
+
+        /* Product Box Style */
+        .product-box {
+            max-width: 700px;
+            margin: 0 auto 30px auto; /* Bottom margin taaky checkout box se gap rahe */
+            display: flex;
+            gap: 40px;
+            border: 3px solid black;
+            border-radius: 5px;
+            padding: 20px;
+        }
+
+        .image-section { width: 50%; }
+        #main-image { width: 100%; border: 1px solid #ccc; }
+        .thumbnail-list { margin-top: 10px; display: flex; gap: 10px; }
+        .thumb { width: 60px; height: 60px; cursor: pointer; border: 1px solid #ccc; }
+
+        .info-section { width: 50%; }
+        .price { font-size: 22px; color: red; font-weight: bold; margin: 10px 0; }
+        .option { margin-bottom: 15px; }
+        .option p { margin-bottom: 5px; }
+
+        .btn {
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid black;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .btn:hover { background: #f0f0f0; }
+
+        #cart-btn {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            color: #fff;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #cart-btn:hover { background: #333; }
+
+        /* ========================================== */
+        /* NEW: Checkout Section Styles */
+        /* ========================================== */
+        .checkout-box {
+            max-width: 700px;
+            margin: 0 auto;
+            border: 2px dashed #000000; /* Dashed border taaky bill jaisa look aaye */
+            padding: 20px;
+            background-color: #f9f9f9;
+            
+        }
+
+        .checkout-box h2 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid #000;
+            margin-bottom: 15px;
+        }
+
+        .checkout-details p {
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+
+        .total-payable {
+            font-size: 18px;
+            font-weight: bold;
+            color: green;
+            margin-top: 15px;
+        }
+
+        #checkout-btn {
+            width: 100%;
+            padding: 12px;
+            background: #28a745; /* Green color for success/complete order */
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        #checkout-btn:hover {
+            background: #218838;
+        }
+</style>
+</head>
+<body>
+
+    <div class="product-box">
+        
+        <div class="image-section">
+            <img id="main-image" src="image1.jpg" alt="Product">
+            <div class="thumbnail-list">
+                <img class="thumb" src="image2.jpg" onclick="changeToImage2()">
+                <img class="thumb" src="image3.jpg" onclick="changeToImage3()">
+            </div>
+        </div>
+
+        <div class="info-section">
+            <h1>Nike Air Jordan Shoes</h1>
+            <p class="price">Rs <span id="product-price">4999</span></p>
+
+            <div class="option">
+                <p><b>Size:</b> <span id="size-display">Small</span></p>
+                <button class="btn" onclick="selectSmall()">Small</button>
+                <button class="btn" onclick="selectMedium()">Medium</button>
+                <button class="btn" onclick="selectLarge()">Large</button>
+            </div>
+
+            <div class="option">
+                <p><b>Color:</b> <span id="color-display">Black</span></p>
+                <button class="btn" onclick="selectBlack()">Black</button>
+                <button class="btn" onclick="selectRed()">Red</button>
+            </div>
+
+            <div class="option">
+                <p><b>Quantity:</b></p>
+                <button class="btn" id="minus-btn">-</button>
+                <span id="quantity-number">1</span>
+                <button class="btn" id="plus-btn">+</button>
+            </div>
+
+            <button id="cart-btn">Add To Cart</button>
+        </div>
+    </div>
+
+    <div class="checkout-box">
+        <h2>Order Checkout</h2>
+        <hr>
+        
+        <div class="checkout-details">
+            <p><b>Item:</b> Nike Air Jordan Shoes</p>
+            <p><b>Selected Size:</b> <span id="bill-size">-</span></p>
+            <p><b>Selected Color:</b> <span id="bill-color">-</span></p>
+            <p><b>Total Quantity:</b> <span id="bill-qty">-</span></p>
+            <p class="total-payable">Total Price: Rs <span id="bill-total">0</span></p>
+        </div>
+
+        <button id="checkout-btn" onclick="completeOrder()">Complete Order</button>
+    </div>
+</body>
+</html>
+
+<script>
+            // ==========================================
+        // 1. HTML ELEMENTS SELECTED
+        // ==========================================
+        const mainImage = document.getElementById('main-image');
+        const sizeDisplay = document.getElementById('size-display');
+        const colorDisplay = document.getElementById('color-display');
+        const quantityNumber = document.getElementById('quantity-number');
+
+        const plusBtn = document.getElementById('plus-btn');
+        const minusBtn = document.getElementById('minus-btn');
+        const cartBtn = document.getElementById('cart-btn');
+
+        // Checkout Section ke Bill Elements
+        const billSize = document.getElementById('bill-size');
+        const billColor = document.getElementById('bill-color');
+        const billQty = document.getElementById('bill-qty');
+        const billTotal = document.getElementById('bill-total');
+
+        // ==========================================
+        // 2. STATE VARIABLES
+        // ==========================================
+        let selectedSize = "Small";
+        let selectedColor = "Black";
+        let quantity = 1;
+        const pricePerItem = 4999; //shoe ki price
+
+        // ==========================================
+        // 3. GALLERY FUNCTIONS
+        // ==========================================
+        function changeToImage1() { mainImage.src = "image1.jpg"; }
+        function changeToImage2() { mainImage.src = "image2.jpg"; }
+        function changeToImage3() { mainImage.src = "image3.jpg"; }
+
+        // ==========================================
+        // 4. SIZE SELECTION FUNCTIONS
+        // ==========================================
+        function selectSmall() { selectedSize = "Small"; sizeDisplay.innerText = "Small"; }
+        function selectMedium() { selectedSize = "Medium"; sizeDisplay.innerText = "Medium"; }
+        function selectLarge() { selectedSize = "Large"; sizeDisplay.innerText = "Large"; }
+
+        // ==========================================
+        // 5. COLOR SELECTION FUNCTIONS
+        // ==========================================
+        function selectBlack() { selectedColor = "Black"; colorDisplay.innerText = "Black"; }
+        function selectRed() { selectedColor = "Red"; colorDisplay.innerText = "Red"; }
+
+        // ==========================================
+        // 6. QUANTITY FUNCTIONS
+        // ==========================================
+        plusBtn.addEventListener('click', function() {
+            quantity = quantity + 1;
+            quantityNumber.innerText = quantity;
+        });
+
+        minusBtn.addEventListener('click', function() {
+            if (quantity > 1) {
+                quantity = quantity - 1;
+                quantityNumber.innerText = quantity;
+            }
+        });
+
+        // ==========================================
+        // 7. ADD TO CART: Data ko Checkout me transfer karna
+        // ==========================================
+        cartBtn.addEventListener('click', function() {
+            // Checkout section ke spans me values insert karna
+            billSize.innerText = selectedSize;
+            billColor.innerText = selectedColor;
+            billQty.innerText = quantity;
+            
+            // Total calculation: Quantity * Price (Rs 4999)
+            let totalCost = quantity * pricePerItem;
+            billTotal.innerText = totalCost;
+            
+            alert("Items sent to Checkout Section below!");
+        });
+
+        // ==========================================
+        // 8. COMPLETE ORDER FUNCTION
+        // ==========================================
+        function completeOrder() {
+            // Check karna ke user ne pehle cart me item dala bhi hai ya nahi
+            if (billQty.innerText === "-") {
+                alert("Please add an item to the cart first!");
+            } else {
+                alert("Thank you! Your order has been successfully placed.");
+            }
+        }
+</script>

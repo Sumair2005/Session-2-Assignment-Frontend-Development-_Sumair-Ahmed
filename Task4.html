@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple To-Do List</title>
+    <style>
+        /* Basic Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #ffffff;
+            padding: 50px;
+        }
+
+        /* Main App Wrapper */
+        .todo-box {
+            max-width: 500px;
+            margin: 0 auto;
+            border: 2px solid #000000; /* Simple Black Border */
+            border-radius: 5px;
+            padding: 20px;
+        }
+
+        h2 {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            
+        }
+
+        #task-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid black;
+            border-radius: 5px;
+        }
+
+        hr {
+            border: 0;
+            border-top: 1px solid black;
+            margin-bottom: 15px;
+        }
+
+        /* Single Task Row Styling */
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+
+        /* Text class when a task is marked as completed */
+        .completed-text {
+            text-decoration: line-through;
+            color: black;
+        }
+
+        /* Common button style inside list */
+        .task-item button {
+            padding: 3px 8px;
+            margin-left: 5px;
+            background: white;
+            border: 1px solid black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .task-item button:hover {
+            background: #eee;
+        }
+
+        /* Standard Add Button */
+        #add-btn {
+            padding: 8px 15px;
+            background: #000;
+            color: #fff;
+            border: 1px solid black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+</style>
+</head>
+<body>
+
+    <div class="todo-box">
+        <h2>My To-Do List</h2>
+        
+        <div class="input-section">
+            <input type="text" id="task-input" placeholder="Enter a new task...">
+            <button id="add-btn" onclick="addNewTask()">Add Task</button>
+        </div>
+
+        <hr>
+
+        <div id="tasks-container">
+            </div>
+    </div>
+</body>
+
+    <script>// ==========================================
+        // 1. DOM ELEMENTS SELECTED
+        // ==========================================
+        const taskInput = document.getElementById('task-input');
+        const tasksContainer = document.getElementById('tasks-container');
+
+        // App start hote hi pehle se saved tasks load karein
+        loadTasksFromStorage();
+
+        // ==========================================
+        // 2. ADD TASK FUNCTION
+        // ==========================================
+        function addNewTask() {
+            let taskText = taskInput.value;
+
+            if (taskText === "") {
+                alert("Please write something first!");
+                return; // Function yahi ruk jayega
+            }
+
+            // Ek naya task row (HTML div) create karna
+            createTaskElement(taskText, false);
+
+            // Input field ko khali karna
+            taskInput.value = "";
+
+            // Data ko Local Storage me save karna
+            saveCurrentData();
+        }
+
+        // ==========================================
+        // 3. CREATE TASK DOM ELEMENT (HTML structures handle karna)
+        // ==========================================
+        function createTaskElement(text, isCompleted) {
+            // 1. Ek main outer div banayein
+            const taskDiv = document.createElement('div');
+            taskDiv.className = "task-item";
+
+            // 2. Ek span tag text ke liye banayein
+            const textSpan = document.createElement('span');
+            textSpan.innerText = text;
+            if (isCompleted) {
+                textSpan.className = "completed-text";
+            }
+            taskDiv.appendChild(textSpan);
+
+            // 3. Ek inner div banayein buttons ko group karne ke liye
+            const btnGroup = document.createElement('div');
+
+            // Complete Button
+            const compBtn = document.createElement('button');
+            compBtn.innerText = "Done";
+            compBtn.onclick = function() {
+                textSpan.classList.toggle('completed-text');
+                saveCurrentData(); // Status change hote hi save karein
+            };
+            btnGroup.appendChild(compBtn);
+
+            // Edit Button
+            const editBtn = document.createElement('button');
+            editBtn.innerText = "Edit";
+            editBtn.onclick = function() {
+                let newText = prompt("Edit your task:", textSpan.innerText);
+                if (newText !== null && newText !== "") {
+                    textSpan.innerText = newText;
+                    saveCurrentData(); // Edit hote hi save karein
+                }
+            };
+            btnGroup.appendChild(editBtn);
+
+            // Delete Button
+            const delBtn = document.createElement('button');
+            delBtn.innerText = "X";
+            delBtn.onclick = function() {
+                taskDiv.remove(); // Screen se div delete karein
+                saveCurrentData(); // Delete hote hi storage clear karein
+            };
+            btnGroup.appendChild(delBtn);
+
+            // Buttons ko main div me dalen aur main div ko container me dalen
+            taskDiv.appendChild(btnGroup);
+            tasksContainer.appendChild(taskDiv);
+        }
+
+        // ==========================================
+        // 4. LOCAL STORAGE FUNCTIONS (Save & Load)
+        // ==========================================
+
+        // Pure UI data ko read karke array me convert karke save karna
+        function saveCurrentData() {
+            let taskRows = document.querySelectorAll('.task-item');
+            let taskArray = [];
+
+            // loop chala kar saara data array me store karna
+            taskRows.forEach(function(row) {
+                let text = row.querySelector('span').innerText;
+                let completed = row.querySelector('span').classList.contains('completed-text');
+                
+                // Object bana kar save karna
+                let taskObject = { text: text, completed: completed };
+                taskArray.push(taskObject);
+            });
+
+            // Array ko text/string me badal kar localStorage me save karna
+            localStorage.setItem("myTasks", JSON.stringify(taskArray));
+        }
+
+        // Pehle se saved data ko reload karna jab page open ho
+        function loadTasksFromStorage() {
+            let savedData = localStorage.getItem("myTasks");
+
+            if (savedData !== null) {
+                // Text string ko wapas real JavaScript Array me convert karna
+                let taskArray = JSON.parse(savedData);
+
+                taskArray.forEach(function(item) {
+                    createTaskElement(item.text, item.completed);
+                });
+            }
+        }
+    </script>
+        
+</html>
